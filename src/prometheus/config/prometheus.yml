@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - scheme: http
+      static_configs:
+        - targets: [ 'alertmanager:9093' ]
+      timeout: 10s
+      api_version: v1
+      
+rule_files:
+  - alert.yml
+    
+scrape_configs:
+  - job_name: "<NAME_FOR_TARGET_MACHINE>"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["<IP_OF_TARGET_MACHINE>:9100"]
+

@@ -1,0 +1,69 @@
+version: '3.3'
+
+services:
+  nginx:
+    image: nginx:1.21.3
+    user: "0"
+    container_name: nginx
+    volumes:
+      - ./nginx/config:/etc/nginx/conf.d
+      - ./nginx/data:/usr/share/nginx/html
+      - ./nginx/logs:/var/log/nginx
+    ports:
+      - "80:80"
+    restart: on-failure
+    networks:
+      - my-network
+
+  prometheus:
+    image: prom/prometheus:v2.30.3
+    user: "0"
+    container_name: prometheus
+    volumes:
+      - ./prometheus/config:/etc/prometheus
+      - ./prometheus/data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.external-url=/prometheus/'
+      - '--web.route-prefix=/prometheus/'
+    ports:
+      - "9090:9090"
+    restart: on-failure
+    networks:
+      - my-network
+
+  grafana:
+    image: grafana/grafana:8.2.1
+    user: "0"
+    container_name: grafana
+    volumes:
+      - ./grafana/config:/etc/grafana
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    restart: on-failure
+    networks:
+      - my-network
+
+  alertmanager:
+    image: prom/alertmanager:v0.23.0
+    user: "0"
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager/config:/etc/alertmanager/
+      - ./alertmanager/data:/alertmanager/data
+    ports:
+      - "9093:9093"
+    restart: on-failure
+    command: --config.file=/etc/alertmanager/alertmanager.yml --log.level=debug
+    networks:
+      - my-network
+networks:
+  my-network:
+    driver: bridge 
+    name: my-network
+
